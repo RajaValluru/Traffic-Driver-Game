@@ -1,0 +1,13 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+
+# IDE / editor metadata
+.vs/
+
+# Frozen build output (regenerate with: python setup.py build)
+build/
+
+# Windows thumbnail cache
+Thumbs.db

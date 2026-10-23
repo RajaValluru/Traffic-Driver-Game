@@ -154,8 +154,8 @@ def rot_center(image, angle):
 
 def store(currentCar):
     G=True
-    temp=0
     while G:
+        temp=0
         Car2File=open('Car2.txt')
         Car2=int(Car2File.read(1))
         Car2File.close()
@@ -166,7 +166,7 @@ def store(currentCar):
         gar=pygame.image.load('garage.png')
         gameDisplay.blit(gar,[0,0])
         cashFile=open('cash.txt')
-        cash=long(cashFile.read(8))
+        cash=int(cashFile.read())
         cashFile.close()
         message('Money:'+str(cash),g,220,'med')
         pygame.display.update()
@@ -206,13 +206,13 @@ def store(currentCar):
                 quit()
             elif e.type==pygame.MOUSEBUTTONDOWN:
                 if temp==1:
-                    intro(currentCar)
+                    G=False  # return to menu (caller keeps the loop running)
                 elif temp==2:
                     
                     currentCar=playerCar1
                 elif temp==3:
                     cashFile=open('cash.txt')
-                    cash=long(cashFile.read(8))
+                    cash=int(cashFile.read())
                     cashFile.close()
                     if(cash>=20000):
                         cash-=20000
@@ -234,7 +234,7 @@ def store(currentCar):
                     currentCar=playerCar2
                 elif temp==5:
                     cashFile=open('cash.txt')
-                    cash=long(cashFile.read(8))
+                    cash=int(cashFile.read())
                     cashFile.close()
                     if(cash>=100000):
                         cash-=100000
@@ -253,6 +253,7 @@ def store(currentCar):
                         time.sleep(1)
                 elif temp==6:
                     currentCar=playerCar3
+    return currentCar
                                    
 
 
@@ -309,8 +310,10 @@ def intro(currentCar):
                 if temp==1:
                     pygame.mixer.music.stop()
                     game(currentCar,grassyRoad1,grassyRoad2,grassyRoad3)
+                    # "B to play again" came back here - restart menu music
+                    pygame.mixer.music.play(-1)
                 elif temp==2:
-                    store(currentCar)
+                    currentCar=store(currentCar)
                 elif temp==3:
                     pygame.quit()
                     quit()
@@ -319,6 +322,7 @@ def game(p1Car,road1,road2,road3):
     pygame.mixer.music.load('run.mp3')
     pygame.mixer.music.play(-1)
     gameExit= False
+    toMenu=False
     gameOver=[False,False]
     #rotation of car
     rotateRight=360
@@ -335,7 +339,6 @@ def game(p1Car,road1,road2,road3):
     transLeft=0
     fTrans='none'
     pedL=True
-    extraCash=0
     score=0
     cashFile=open('cash.txt')
     cash=int(cashFile.read(10))
@@ -392,7 +395,7 @@ def game(p1Car,road1,road2,road3):
             pygame.mixer.music.stop()
             pygame.mixer.music.load('cc.mp3')
             pygame.mixer.music.play(1,28)
-            cash+=int(extraCash)
+            cash+=int(score)  # earn cash equal to the score of this run
             cashFile=open('cash.txt','w')
             cashFile.write(str(int(cash)))
             cashFile.close()
@@ -402,7 +405,7 @@ def game(p1Car,road1,road2,road3):
                 pygame.display.update()
                 time.sleep(1)
                 gameDisplay.fill(green)
-                message("+"+str(int(extraCash)),blue,-40,'med')
+                message("+"+str(int(score)),blue,-40,'med')
                 message("Total Money: "+str(int(cash)),blue,0,'med')
                 message("B to play again",yellow,40,'med')
                 message("Q to quit",yellow,65,'med')
@@ -414,7 +417,10 @@ def game(p1Car,road1,road2,road3):
                             gameExit = True
                             gameOver[0]=gameOver[1]=False
                         elif event.key == pygame.K_b:
-                            intro(p1Car)
+                            # back to menu (intro's loop keeps running)
+                            toMenu=True
+                            gameExit = True
+                            gameOver[0]=gameOver[1]=False
                     elif event.type==pygame.QUIT:
                         gameExit=True
                         gameOver[0]=gameOver[1]=False
@@ -508,10 +514,8 @@ def game(p1Car,road1,road2,road3):
             transLeft=0
         if(rY_speed>10 and pos2X+10<250):
             score+=int(rY_speed*2)
-            extraCash+=0.2
         elif(rY_speed>10):
             score+=int(rY_speed)
-            extraCash+=0.1
         #pedestrian
         if(randPedY>700):
             randPedY=random.randrange(-2000,-20)
@@ -609,8 +613,9 @@ def game(p1Car,road1,road2,road3):
         
         clock.tick(lvl)
 
-    pygame.quit()
-    quit()
+    if not toMenu:
+        pygame.quit()
+        quit()
 
 
 intro(playerCar1)
